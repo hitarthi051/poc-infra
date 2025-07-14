@@ -7,7 +7,7 @@ phases:
     commands:
       - node --version
       - npm --version
-      - aws cloudformation package --region eu-west-1 --template-file main.yml --s3-bucket zero-downtime-poc-devops-artifact --output-template-file main.template
+      - aws cloudformation package --region eu-west-1 --template-file main.yml --s3-bucket zero-downtime-poc-devops-artifact-v3 --output-template-file main.template
       #prepare all [nested file] in main file to deploy on cloudformation 
 artifacts:
   files:
