@@ -24,14 +24,14 @@ Resources:
       Description: Grant AWS services access to Code Build
       Path: /
       Policies:
-        - PolicyName: zero-downtime-poc-code-build-admin-access
+        - PolicyName: zero-downtime-poc-code-build-admin-access-v3
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Action: '*'
                 Effect: Allow
                 Resource: '*'
-      RoleName: 'zero-downtime-poc-code-build-role'
+      RoleName: 'zero-downtime-poc-code-build-role-v3'
       Tags:
         - Key: 'zero-downtime-poc-code-build-role'
           Value: 'zero-downtime-poc-code-build-role'
@@ -50,7 +50,7 @@ Resources:
         Version: '2012-10-17'
       Path: /
       Policies:
-        - PolicyName: zero-downtime-poc-code-pipeline-admin-access
+        - PolicyName: zero-downtime-poc-code-pipeline-admin-access-v3
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -58,7 +58,7 @@ Resources:
                   - '*'
                 Effect: Allow
                 Resource: '*'
-      RoleName: 'zero-downtime-poc-code-pipeline-role'
+      RoleName: 'zero-downtime-poc-code-pipeline-role-v3'
       Tags:
         - Key: 'zero-downtime-poc-code-pipeline-role'
           Value: 'zero-downtime-poc-code-pipeline-role'
@@ -77,14 +77,14 @@ Resources:
         Version: '2012-10-17'
       Path: '/'
       Policies:
-        - PolicyName: zero-downtime-poc-cloud-formation-admin-access
+        - PolicyName: zero-downtime-poc-cloud-formation-admin-access-v3
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Action: '*'
                 Effect: Allow
                 Resource: '*'
-      RoleName: 'zero-downtime-poc-cloud-formation-role'
+      RoleName: 'zero-downtime-poc-cloud-formation-role-v3'
       Tags:
         - Key: 'zero-downtime-poc-cloud-formation-role'
           Value: 'zero-downtime-poc-cloud-formation-role'
@@ -104,7 +104,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: zero-downtime-poc-cloudformation-scripts
+      BucketName: zero-downtime-poc-cloudformation-scripts-v3
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -132,7 +132,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: zero-downtime-poc-devops-artifact
+      BucketName: zero-downtime-poc-devops-artifact-v3
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -170,7 +170,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: zero-downtime-poc-smoketest-script
+      BucketName: zero-downtime-poc-smoketest-script-v3
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -189,7 +189,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: zero-downtime-poc-database
+      BucketName: zero-downtime-poc-database-v3
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -209,7 +209,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: infrastructure-source-poc-zero-downtime
+      BucketName: infrastructure-source-poc-zero-downtime-v3
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -229,7 +229,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: ui-source-poc-zero-downtime
+      BucketName: ui-source-poc-zero-downtime-v3
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -250,7 +250,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: api-source-poc-zero-downtime
+      BucketName: api-source-poc-zero-downtime-v3
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -262,7 +262,6 @@ Resources:
             NoncurrentVersionExpirationInDays: 1
             Status: Enabled
 
-#versio1
   UIBuildArtifactsStoreBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
@@ -270,7 +269,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: ui-artifacts-poc-zero-downtime
+      BucketName: ui-artifacts-poc-zero-downtime-v3
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -284,6 +283,7 @@ Resources:
           - ExpirationInDays: 1
             NoncurrentVersionExpirationInDays: 1
             Status: Enabled
+            
   BucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -297,48 +297,7 @@ Resources:
               Service: "cloudfront.amazonaws.com"
             Action: "s3:GetObject"
             Resource: !Sub "arn:aws:s3:::${UIBuildArtifactsStoreBucket}/*"
-            Condition:
-              StringEquals:
-                AWS:SourceArn: "arn:aws:cloudfront::057297422439:distribution/E15ISXOPW45Z64"
 
-#version2
-  UIBuildArtifactsStoreBucketversion2:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      BucketName: ui-artifacts-poc-zero-downtime-version-2
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      WebsiteConfiguration:
-        IndexDocument: index.html  # The default document (can be any HTML file)
-        ErrorDocument: error.html
-      LifecycleConfiguration:
-        Rules:
-          - ExpirationInDays: 1
-            NoncurrentVersionExpirationInDays: 1
-            Status: Enabled
-  BucketPolicyversion2:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref UIBuildArtifactsStoreBucketversion2
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Sid: "AllowCloudFrontServicePrincipal"
-            Effect: "Allow"
-            Principal:
-              Service: "cloudfront.amazonaws.com"
-            Action: "s3:GetObject"
-            Resource: !Sub "arn:aws:s3:::${UIBuildArtifactsStoreBucketversion2}/*"
-            Condition:
-              StringEquals:
-                AWS:SourceArn: "arn:aws:cloudfront::057297422439:distribution/E15ISXOPW45Z64"
 
 
 #infra codebuild
@@ -348,7 +307,7 @@ Resources:
       Description: Infrastructure CloudFormation Build & Packaging
       Source:
         Type: GITHUB
-        Location: !Sub "https://github.com/IshanBhattTatvasoft/poc-infra"
+        Location: !Sub "https://github.com/hitarthi051/poc-infra"
         BuildSpec: !Sub "buildspec/config.yml"
         GitCloneDepth: 1
       Name: zero-downtime-poc-infrastructure
@@ -372,7 +331,7 @@ Resources:
     Properties:
       Source:
         Type: GITHUB
-        Location: !Sub "https://github.com/IshanBhattTatvasoft/poc-ui"
+        Location: !Sub "https://github.com/hitarthi051/poc-ui"
         BuildSpec: !Sub "buildspec/ui-config.yml"
         GitCloneDepth: 1
       SourceVersion: !Ref BranchName
@@ -391,12 +350,9 @@ Resources:
         Image: "aws/codebuild/standard:6.0"
         Type: LINUX_CONTAINER
         EnvironmentVariables:
-           - Name: UIARTIFACTBUCKETNAME
+           - Name: ARTIFACTBUCKETNAME
              Type: PLAINTEXT
-             Value: !Ref UIBuildArtifactsStoreBucket
-          #  - Name: POCVERSION
-          #    Type: PLAINTEXT
-          #    Value: "v1"  # Modify this at runtime to pass different directory names
+             Value: !Ref ArtifactStoreS3Bucket
       TimeoutInMinutes: 90
 
 #API codebuild
@@ -405,7 +361,7 @@ Resources:
     Properties:
       Source:
         Type: GITHUB
-        Location: !Sub "https://github.com/IshanBhattTatvasoft/poc-api"
+        Location: !Sub "https://github.com/hitarthi051/poc-api"
         BuildSpec: !Sub "buildspec/api-config.yml"
         GitCloneDepth: 1
       SourceVersion: !Ref BranchName
@@ -492,19 +448,19 @@ Resources:
               OutputArtifacts:
                 - Name: zero-downtime-poc-Infrastructure-SourceOutput
               RunOrder: '1'
-            # - Name: UI-Source
-            #   ActionTypeId:
-            #     Category: Source
-            #     Owner: AWS
-            #     Provider: S3
-            #     Version: '1'
-            #   Configuration:
-            #     S3Bucket: !Sub '${ArtifactStoreS3Bucket}'
-            #     PollForSourceChanges: false
-            #     S3ObjectKey: zero-downtime-poc-ui.zip
-            #   OutputArtifacts:
-            #     - Name: zero-downtime-poc-UI-SourceOutput
-            #   RunOrder: '1'
+            - Name: UI-Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: S3
+                Version: '1'
+              Configuration:
+                S3Bucket: !Sub '${UIBuildArtifactsStoreBucket}'
+                PollForSourceChanges: false
+                S3ObjectKey: zero-downtime-poc-ui.zip
+              OutputArtifacts:
+                - Name: zero-downtime-poc-UI-SourceOutput
+              RunOrder: '1'
             # - Name: API-Source
             #   ActionTypeId:
             #     Category: Source
@@ -549,31 +505,17 @@ Resources:
                 TemplatePath: "zero-downtime-poc-Infrastructure-SourceOutput::main.template"
                 # TemplateConfiguration: "Infrastructure-SourceOutput::jhgj-config.json"
               RunOrder: "2"
-        # - Name: UI-deploy
-        #   Actions:
-        #     - Name: Deploy
-        #       ActionTypeId:
-        #         Category: Deploy
-        #         Owner: AWS
-        #         Provider: S3
-        #         Version: "1"
-        #       InputArtifacts:
-        #         - Name: zero-downtime-poc-UI-SourceOutput
-        #       Configuration:
-        #         BucketName: !Ref UIBuildArtifactsStoreBucket
-        #         Extract: true
-        #       RunOrder: "2"
-        # - Name: API-deploy
-        #   Actions:
-        #     - Name: Deploy
-        #       ActionTypeId:
-        #         Category: Deploy
-        #         Owner: AWS
-        #         Provider: S3
-        #         Version: "1"
-        #       InputArtifacts:
-        #         - Name: zero-downtime-poc-API-SourceOutput
-        #       Configuration:
-        #         BucketName: !Ref UIBuildArtifactsStoreBucket
-        #         Extract: true
-        #       RunOrder: "4"
+        - Name: UI-deploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: S3
+                Version: "1"
+              InputArtifacts:
+                - Name: zero-downtime-poc-UI-SourceOutput
+              Configuration:
+                BucketName: !Ref UIBuildArtifactsStoreBucket
+                Extract: true
+              RunOrder: "2"
