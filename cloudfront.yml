@@ -5,26 +5,23 @@ Resources:
     Properties:
       OriginAccessControlConfig:
         Name: "test1-ui-artifacts-poc-zero-downtime"
-        SigningBehavior: "always"  # Use "never", "no-override", or "always"
+        SigningBehavior: "always" 
         OriginAccessControlOriginType: "s3"
-        SigningProtocol: "sigv4"  # Use "sigv4" for S3 signed URLs
+        SigningProtocol: "sigv4" 
   MyCloudFrontDistribution:
     Type: "AWS::CloudFront::Distribution"
     Properties:
       DistributionConfig:
         Origins:
           - Id: "MyOrigin"
-            DomainName: "ui-artifacts-poc-zero-downtime.s3.eu-west-1.amazonaws.com"  # Replace with your S3 bucket or custom domain
-            OriginAccessControlId: "test-ui-artifacts-poc-zero-downtime"  # Attach the OAC
-            # OriginPath: "/"
+            DomainName: "ui-artifacts-poc-zero-downtime-v3.s3.eu-west-1.amazonaws.com"  
             S3OriginConfig:
-              OriginAccessIdentity: ""
-            OriginAccessControlId: !Ref MyOriginAccessControl  # You can specify an OAI if using S3 origin
+              OriginAccessControlId: !Ref MyOriginAccessControl  
 
         Enabled: "true"
         DefaultCacheBehavior:
           TargetOriginId: "MyOrigin"
-          ViewerProtocolPolicy: "redirect-to-https"  # Can be 'allow-all', 'redirect-to-https', 'https-only'
+          ViewerProtocolPolicy: "redirect-to-https"  
           AllowedMethods:
             - "GET"
             - "HEAD"
@@ -32,6 +29,5 @@ Resources:
             QueryString: "false"
             Cookies:
               Forward: "none"
-        # PriceClass: "PriceClass_All"  # Choose pricing class as per needs
-        DefaultRootObject: "index.html"  # The object to serve by default
+        DefaultRootObject: "index.html"  
 
