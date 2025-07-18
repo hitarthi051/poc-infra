@@ -1,10 +1,13 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  BucketName:
+    Type: String
 Resources:
   MyOriginAccessControl:
     Type: "AWS::CloudFront::OriginAccessControl"
     Properties:
       OriginAccessControlConfig:
-        Name: "test1-ui-artifacts-poc-zero-downtime"
+        Name: !Ref BucketName
         SigningBehavior: "always" 
         OriginAccessControlOriginType: "s3"
         SigningProtocol: "sigv4" 
@@ -14,10 +17,9 @@ Resources:
       DistributionConfig:
         Origins:
           - Id: "MyOrigin"
-            DomainName: "ui-artifacts-poc-zero-downtime-v3.s3.eu-west-1.amazonaws.com"  
+            DomainName: !Sub "${BucketName}.s3.eu-west-1.amazonaws.com"  
             S3OriginConfig:
               OriginAccessControlId: !Ref MyOriginAccessControl  
-
         Enabled: "true"
         DefaultCacheBehavior:
           TargetOriginId: "MyOrigin"

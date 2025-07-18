@@ -241,7 +241,6 @@ Resources:
             NoncurrentVersionExpirationInDays: 1
             Status: Enabled
 
-
 #source
   APIZeroDowntimeBucket:
     Type: 'AWS::S3::Bucket'
@@ -298,9 +297,42 @@ Resources:
             Action: "s3:GetObject"
             Resource: !Sub "arn:aws:s3:::${UIBuildArtifactsStoreBucket}/*"
 
+  UIBuildArtifactsStoreBucketB:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: ui-artifacts-poc-zero-downtime-v3-B
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      WebsiteConfiguration:
+        IndexDocument: index.html  
+        ErrorDocument: error.html
+      LifecycleConfiguration:
+        Rules:
+          - ExpirationInDays: 1
+            NoncurrentVersionExpirationInDays: 1
+            Status: Enabled
+            
+  BucketPolicyB:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref UIBuildArtifactsStoreBucketB
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AllowCloudFrontServicePrincipal"
+            Effect: "Allow"
+            Principal:
+              Service: "cloudfront.amazonaws.com"
+            Action: "s3:GetObject"
+            Resource: !Sub "arn:aws:s3:::${UIBuildArtifactsStoreBucketB}/*"
 
-
-#infra codebuild
   InfrastructureCodeBuild:
     Type: 'AWS::CodeBuild::Project'
     Properties:
@@ -326,6 +358,36 @@ Resources:
         Type: LINUX_CONTAINER
       TimeoutInMinutes: 15
 
+  WeightshifCodeBuild:
+    Type: 'AWS::CodeBuild::Project'
+    Properties:
+      Source:
+        Type: GITHUB
+        Location: !Sub "https://github.com/hitarthi051/poc-infra"
+        BuildSpec: !Sub "buildspec/weight-shift-buildspec.yml"
+        GitCloneDepth: 1
+      Name: zero-downtime-poc-infrastructure-weight-shift
+      ServiceRole: !Ref CodeBuildRole
+      QueuedTimeoutInMinutes: 30
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: "aws/codebuild/standard:6.0"
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: HOSTED_ZONE_ID
+            Value: ""
+          - Name: RECORD_NAME
+            Value: ""
+          - Name: CLOUDFRONT_CANARY
+            Value: ""
+          - Name: CLOUDFRONT_STABLE
+            Value: ""
+          - Name: STABLE_WEIGHT
+            Value: ""
+          - Name: CANARY_WEIGHT
+            Value: ""
+      TimeoutInMinutes: 15
+
   UICodeBuild:
     Type: 'AWS::CodeBuild::Project'
     Properties:
@@ -337,12 +399,13 @@ Resources:
       SourceVersion: !Ref BranchName
       Name: zero-downtime-poc-ui
       Artifacts:
-        Location: !Ref UIBuildArtifactsStoreBucket
-        Name: 'zero-downtime-poc-ui.zip'
-        NamespaceType: NONE
-        OverrideArtifactName: true
-        Packaging: ZIP
-        Type: S3
+        Type: CODEPIPELINE
+        # Location: !Ref UIBuildArtifactsStoreBucket
+        # Name: 'zero-downtime-poc-ui.zip'
+        # NamespaceType: NONE
+        # OverrideArtifactName: true
+        # Packaging: ZIP
+        # Type: S3
       ServiceRole: !Ref CodeBuildRole
       QueuedTimeoutInMinutes: 60
       Environment:
@@ -350,12 +413,65 @@ Resources:
         Image: "aws/codebuild/standard:6.0"
         Type: LINUX_CONTAINER
         EnvironmentVariables:
-           - Name: ARTIFACTBUCKETNAME
+           - Name: UIARTIFACTBUCKETNAME
              Type: PLAINTEXT
-             Value: !Ref ArtifactStoreS3Bucket
+             Value: ""
       TimeoutInMinutes: 90
 
-#API codebuild
+  DeploymentPipelineCodeBuild:
+    Type: 'AWS::CodeBuild::Project'
+    Properties:
+      Source:
+        Type: GITHUB
+        Location: !Sub "https://github.com/hitarthi051/poc-infra"
+        BuildSpec: !Sub "buildspec/pipeline-config.yml"
+        GitCloneDepth: 1
+      SourceVersion: !Ref BranchName
+      Name: zero-downtime-deployment-pipeline
+      ServiceRole: !Ref CodeBuildRole
+      QueuedTimeoutInMinutes: 60
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: "aws/codebuild/standard:6.0"
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: ARTIFACTBUCKETNAME
+            Type: PLAINTEXT
+            Value: !Ref ArtifactStoreS3Bucket
+          - Name: DEPLOYAPI
+            Value: ""
+          - Name: UIARTIFACTBUCKETNAME
+            Value: ""
+          - Name: BlueOrGreen
+            Value: ""
+          - Name: APIBranch
+            Value: ""
+          - Name: DEPLOYDB
+            Value: ""
+          - Name: DEPLOYUI
+            Value: ""
+          - Name: UIBranch
+            Value: ""
+          - Name: CANARY
+            Value: ""
+          - Name: HOSTED_ZONE_ID
+            Value: ""
+          - Name: RECORD_NAME
+            Value: ""
+          - Name: CLOUDFRONT_STABLE
+            Value: ""
+          - Name: CLOUDFRONT_CANARY
+            Value: ""
+          - Name: STABLE_WEIGHT
+            Value: "0"
+          - Name: CANARY_WEIGHT
+            Value: "100"
+          - Name: CANARY_TAG
+            Value: ""
+          - Name: STABLE_TAG
+            Value: ""
+      TimeoutInMinutes: 90
+
   APICodeBuild:
     Type: 'AWS::CodeBuild::Project'
     Properties:
@@ -366,19 +482,22 @@ Resources:
         GitCloneDepth: 1
       SourceVersion: !Ref BranchName
       Name: zero-downtime-poc-api
-      Artifacts:
-        Location: !Ref ArtifactStoreS3Bucket
-        Name: 'zero-downtime-poc-api.zip'
-        NamespaceType: NONE
-        OverrideArtifactName: true
-        Packaging: ZIP
-        Type: S3
+      # Artifacts:
+      #   Location: !Ref ArtifactStoreS3Bucket
+      #   Name: 'zero-downtime-poc-api.zip'
+      #   NamespaceType: NONE
+      #   OverrideArtifactName: true
+      #   Packaging: ZIP
+      #   Type: S3
       ServiceRole: !Ref CodeBuildRole
       QueuedTimeoutInMinutes: 60
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: "aws/codebuild/standard:7.0"
         Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: STAGE
+            Value: ""
       TimeoutInMinutes: 90
 
   SmokeTestCodeBuild:
@@ -400,7 +519,6 @@ Resources:
         Image: "aws/codebuild/standard:7.0"
         Type: LINUX_CONTAINER
       TimeoutInMinutes: 90
-
 
   DatabaseCodeBuild:
     Type: "AWS::CodeBuild::Project"
@@ -461,20 +579,6 @@ Resources:
               OutputArtifacts:
                 - Name: zero-downtime-poc-UI-SourceOutput
               RunOrder: '1'
-            # - Name: API-Source
-            #   ActionTypeId:
-            #     Category: Source
-            #     Owner: AWS
-            #     Provider: S3
-            #     Version: '1'
-            #   Configuration:
-            #     S3Bucket: !Sub '${ArtifactStoreS3Bucket}'
-            #     PollForSourceChanges: false
-            #     S3ObjectKey: zero-downtime-poc-api.zip
-            #   OutputArtifacts:
-            #     - Name: zero-downtime-poc-API-SourceOutput
-            #   RunOrder: '1'
-
         - Name: Manual-approval1
           Actions:
             - Name: approval
@@ -519,3 +623,4 @@ Resources:
                 BucketName: !Ref UIBuildArtifactsStoreBucket
                 Extract: true
               RunOrder: "2"
+
