@@ -482,13 +482,13 @@ Resources:
         GitCloneDepth: 1
       SourceVersion: !Ref BranchName
       Name: zero-downtime-poc-api
-      # Artifacts:
-      #   Location: !Ref ArtifactStoreS3Bucket
-      #   Name: 'zero-downtime-poc-api.zip'
-      #   NamespaceType: NONE
-      #   OverrideArtifactName: true
-      #   Packaging: ZIP
-      #   Type: S3
+      Artifacts:
+        Location: !Ref ArtifactStoreS3Bucket
+        Name: 'zero-downtime-poc-api.zip'
+        NamespaceType: NONE
+        OverrideArtifactName: true
+        Packaging: ZIP
+        Type: S3
       ServiceRole: !Ref CodeBuildRole
       QueuedTimeoutInMinutes: 60
       Environment:
