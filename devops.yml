@@ -304,7 +304,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: ui-artifacts-poc-zero-downtime-v3-B
+      BucketName: ui-artifacts-poc-zero-downtime-v3-b
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -367,6 +367,13 @@ Resources:
         BuildSpec: !Sub "buildspec/weight-shift-buildspec.yml"
         GitCloneDepth: 1
       Name: zero-downtime-poc-infrastructure-weight-shift
+      Artifacts:
+        Location: !Ref ArtifactStoreS3Bucket
+        Name: 'zero-downtime-poc-infrastructure-weight-shift.zip'
+        NamespaceType: NONE
+        OverrideArtifactName: true
+        Packaging: ZIP
+        Type: S3
       ServiceRole: !Ref CodeBuildRole
       QueuedTimeoutInMinutes: 30
       Environment:
@@ -392,11 +399,9 @@ Resources:
     Type: 'AWS::CodeBuild::Project'
     Properties:
       Source:
-        Type: GITHUB
-        Location: !Sub "https://github.com/hitarthi051/poc-ui"
+        Type: CODEPIPELINE
         BuildSpec: !Sub "buildspec/ui-config.yml"
-        GitCloneDepth: 1
-      SourceVersion: !Ref BranchName
+      # SourceVersion: !Ref BranchName
       Name: zero-downtime-poc-ui
       Artifacts:
         Type: CODEPIPELINE
@@ -428,6 +433,13 @@ Resources:
         GitCloneDepth: 1
       SourceVersion: !Ref BranchName
       Name: zero-downtime-deployment-pipeline
+      Artifacts:
+        Location: !Ref ArtifactStoreS3Bucket
+        Name: 'zero-downtime-deployment-pipeline.zip'
+        NamespaceType: NONE
+        OverrideArtifactName: true
+        Packaging: ZIP
+        Type: S3
       ServiceRole: !Ref CodeBuildRole
       QueuedTimeoutInMinutes: 60
       Environment:

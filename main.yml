@@ -23,6 +23,6 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       Parameters:
-        BucketName: "ui-artifacts-poc-zero-downtime-v3-B"
+        BucketName: "ui-artifacts-poc-zero-downtime-v3-b"
       TemplateURL: ./cloudfront.yml
       TimeoutInMinutes: 30

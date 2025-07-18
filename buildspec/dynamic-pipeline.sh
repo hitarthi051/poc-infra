@@ -20,7 +20,7 @@ for id in $(aws cloudfront list-distributions --query "DistributionList.Items[?T
     STABLE_TAG="green"
     CANARY_TAG="blue"
     CLOUDFRONT_CANARY=$(aws cloudfront list-distributions --query "DistributionList.Items[?Tags.Items[?Key=='Deployment' && Value=='blue']].DomainName" --output text)
-    UIARTIFACTBUCKETNAME="${UIARTIFACTBUCKETNAME}-B"
+    UIARTIFACTBUCKETNAME="${UIARTIFACTBUCKETNAME}-b"
   fi
 
   break
