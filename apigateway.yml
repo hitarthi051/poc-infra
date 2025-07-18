@@ -13,6 +13,29 @@ Resources:
       Name: poc-api-gateway-2
       Description: API Gateway created using CloudFormation
 
+  pocApiDeployment2:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: pocApiGateway2
+    Properties:
+      RestApiId: !Ref pocApiGateway2
+      Description: Deployment for API Gateway 1
+
+  pocApiStageBlue:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: blue
+      RestApiId: !Ref pocApiGateway2
+      DeploymentId: !Ref pocApiDeployment2
+      Description: Blue stage for API 1
+
+  pocApiStageGreen:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: green
+      RestApiId: !Ref pocApiGateway2
+      DeploymentId: !Ref pocApiDeployment2
+      Description: Green stage for API 1
+
 
   SSMApiGatewayId1:
     Type: "AWS::SSM::Parameter"

@@ -44,6 +44,30 @@ Conditions:
   CondRUNCANARY: !Equals [!Ref CANARY, "yes"]
  
 Resources:
+  DynamicCodePipelineRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - 'codepipeline.amazonaws.com'
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: zero-downtime-poc-dynamic-pipeline-admin-access-v3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - '*'
+                Effect: Allow
+                Resource: '*'
+      RoleName: 'zero-downtime-poc-dynamic-pipeline-role-v3'
+
   DynamicPipeline:
     Type: "AWS::CodePipeline::Pipeline"
     Properties:
@@ -53,7 +77,7 @@ Resources:
         Location: !Ref S3Bucket
         Type: S3
       Name: !Sub depoyment-dynamic-pipeline
-      RoleArn: !Sub ""
+      RoleArn: !GetAtt DynamicCodePipelineRole.Arn
       Stages:
         - Name: Source
           Actions:
