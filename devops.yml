@@ -470,10 +470,10 @@ Resources:
             Value: ""
           - Name: RECORD_NAME
             Value: ""
-          - Name: CLOUDFRONT_STABLE
-            Value: ""
-          - Name: CLOUDFRONT_CANARY
-            Value: ""
+          # - Name: CLOUDFRONT_STABLE
+          #   Value: ""
+          # - Name: CLOUDFRONT_CANARY
+          #   Value: ""
           - Name: STABLE_WEIGHT
             Value: "0"
           - Name: CANARY_WEIGHT

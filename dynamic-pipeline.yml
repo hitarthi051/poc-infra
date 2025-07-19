@@ -27,7 +27,7 @@ Parameters:
     AllowedValues:
       - "yes"
       - "no"
-  DEPLOYCANARY:
+  CANARY:
     Type: String
     AllowedValues:
       - "yes"
