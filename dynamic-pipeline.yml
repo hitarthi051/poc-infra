@@ -50,6 +50,8 @@ Parameters:
     Type: String
   CLOUDFRONTSTABLE:
     Type: String
+  Githubtoken:
+    Type: String
 
 Conditions:
   CondDEPLOYAPI: !Equals [!Ref DEPLOYAPI, "yes"]
@@ -108,6 +110,7 @@ Resources:
                   Owner: hitarthi051
                   Repo: poc-ui
                   Branch: !Ref UIBranch
+                  OAuthToken: !Ref Githubtoken
                 OutputArtifacts:
                   - Name: UISource
                 RunOrder: 1

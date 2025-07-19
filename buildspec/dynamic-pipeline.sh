@@ -34,6 +34,7 @@ aws cloudformation deploy --template ./dynamic-pipeline.yml \
     --parameter-overrides \
     APIBranch=${APIBranch} \
     S3Bucket=${S3Bucket} \
+    Githubtoken=${Githubtoken} \
     UIARTIFACTBUCKETNAME=${UIARTIFACTBUCKETNAME} \
     BlueOrGreen=${BlueOrGreen} \
     UIBranch=${UIBranch} \
