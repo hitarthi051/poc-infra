@@ -134,6 +134,25 @@ Resources:
                   - Name: APISource
                 RunOrder: 1
               - !Ref AWS::NoValue
+            - !If
+              - CondDEPLOYDB
+              - 
+                Name: DBSource
+                ActionTypeId:
+                  Category: Source
+                  Owner: ThirdParty
+                  Provider: GitHub
+                  Version: "1"
+                Configuration:
+                  Owner: hitarthi051
+                  Repo: poc-db
+                  Branch: "v1"
+                  OAuthToken: !Ref Githubtoken
+                OutputArtifacts:
+                  - Name: DBSource
+                RunOrder: 1
+              - !Ref AWS::NoValue
+ 
 
         - !If 
           - CondDEPLOYUI
@@ -182,6 +201,8 @@ Resources:
                   Owner: AWS
                   Provider: CodeBuild
                   Version: "1"
+                InputArtifacts:
+                  - Name: DBSource
                 Configuration:
                   ProjectName: zero-downtime-poc-database
                   # EnvironmentVariables: !Sub '[{"name":"stage","value":"${EnvironmentName}","type":"PLAINTEXT"}, {"name":"LAMBDA","value":"central-admin","type":"PLAINTEXT"},{"name":"PIPELINE_EXECUTION_ID","value":"#{codepipeline.PipelineExecutionId}","type":"PLAINTEXT"}]'
