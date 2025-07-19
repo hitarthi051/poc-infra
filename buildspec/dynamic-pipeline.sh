@@ -30,6 +30,7 @@ done
 aws cloudformation deploy --template ./dynamic-pipeline.yml \
     --stack-name deployment-dynamic-pipeline \
     --capabilities CAPABILITY_NAMED_IAM \
+    --s3-bucket ${S3_BUCKET} \
     --parameter-overrides \
     APIBranch=${APIBranch} \
     UIARTIFACTBUCKETNAME=${UIARTIFACTBUCKETNAME} \

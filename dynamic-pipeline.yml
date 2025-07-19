@@ -38,6 +38,8 @@ Parameters:
       - "no"
   STABLETAG:
     Type: String
+  S3Bucket:
+    Type: String
   CANARYTAG:
     Type: String
   STABLEWEIGHT:
@@ -95,7 +97,8 @@ Resources:
           Actions:
             - !If
               - CondDEPLOYUI
-              - Name: UISource
+              - 
+                Name: UISource
                 ActionTypeId:
                   Category: Source
                   Owner: AWS
@@ -106,12 +109,14 @@ Resources:
                   Repo: poc-ui
                   Branch: !Ref UIBranch
                 OutputArtifacts:
-                - Name: UISource
-                RunOrder: "1"
-              - !Ref "AWS::NoValue"
-            - !If 
+                  - Name: UISource
+                RunOrder: 1
+              - !Ref AWS::NoValue
+
+            - !If
               - CondDEPLOYAPI
-              - Name: APISource
+              - 
+                Name: APISource
                 ActionTypeId:
                   Category: Source
                   Owner: ThirdParty
@@ -123,8 +128,9 @@ Resources:
                   Branch: !Ref APIBranch
                 OutputArtifacts:
                   - Name: APISource
-                RunOrder: "1"
-              - !Ref "AWS::NoValue"
+                RunOrder: 1
+              - !Ref AWS::NoValue
+
         - !If 
           - CondDEPLOYUI
           - Name: UI
@@ -143,19 +149,10 @@ Resources:
                   ProjectName: zero-downtime-poc-ui
                   EnvironmentVariables: !Sub '[{"name":"UIARTIFACTBUCKETNAME","value":"${UIARTIFACTBUCKETNAME}","type":"PLAINTEXT"}]'
                 RunOrder: "1"
-          # - Name: UI-Artifact-Source
-          #   ActionTypeId:
-          #     Category: Source
-          #     Owner: AWS
-          #     Provider: S3
-          #     Version: '1'
-          #   Configuration:
-          #     S3Bucket: !Sub '${UIBuildArtifactsStoreBucket}'
-          #     PollForSourceChanges: false
-          #     S3ObjectKey: zero-downtime-poc-ui.zip
-          #   OutputArtifacts:
-          #     - Name: zero-downtime-poc-UI-SourceOutput
-          #   RunOrder: '2'
+          - !Ref AWS::NoValue
+
+        - !If 
+          - CondDEPLOYUI
           - Name: UI-deploy
             Actions:
               - Name: Deploy
@@ -226,6 +223,17 @@ Resources:
                   - Name: APISource
                 Configuration:
                   ProjectName: zero-downtime-poc-infrastructure-weight-shift
-                  EnvironmentVariables: !Sub '[{"name":"HOSTED_ZONE_ID","value":"${HOSTEDZONEID}","type":"PLAINTEXT"},{"name":"RECORD_NAME","value":"${RECORDNAME}","type":"PLAINTEXT"},{"name":"STABLE_WEIGHT","value":"${STABLEWEIGHT}","type":"PLAINTEXT"},{"name":"CANARY_WEIGHT","value":"${CANARYWEIGHT}","type":"PLAINTEXT"},{"name":"CLOUDFRONT_CANARY","value":"${CLOUDFRONTCANARY}","type":"PLAINTEXT"},{"name":"CLOUDFRONT_STABLE","value":"${CLOUDFRONTSTABLE}","type":"PLAINTEXT"},{"name":"STABLE_TAG","value":"${STABLETAG}", {"name":"CANARY_TAG","value":"${CANARYTAG}","type":"PLAINTEXT"},"type":"PLAINTEXT"},{"name":"PIPELINE_EXECUTION_ID","value":"#{codepipeline.PipelineExecutionId}","type":"PLAINTEXT"}]'
+                  EnvironmentVariables: !Sub |
+                    [
+                      {"name":"HOSTED_ZONE_ID","value":"${HOSTEDZONEID}","type":"PLAINTEXT"},
+                      {"name":"RECORD_NAME","value":"${RECORDNAME}","type":"PLAINTEXT"},
+                      {"name":"STABLE_WEIGHT","value":"${STABLEWEIGHT}","type":"PLAINTEXT"},
+                      {"name":"CANARY_WEIGHT","value":"${CANARYWEIGHT}","type":"PLAINTEXT"},
+                      {"name":"CLOUDFRONT_CANARY","value":"${CLOUDFRONTCANARY}","type":"PLAINTEXT"},
+                      {"name":"CLOUDFRONT_STABLE","value":"${CLOUDFRONTSTABLE}","type":"PLAINTEXT"},
+                      {"name":"STABLE_TAG","value":"${STABLETAG}","type":"PLAINTEXT"},
+                      {"name":"CANARY_TAG","value":"${CANARYTAG}","type":"PLAINTEXT"},
+                      {"name":"PIPELINE_EXECUTION_ID","value":"#{codepipeline.PipelineExecutionId}","type":"PLAINTEXT"}
+                    ]
                 RunOrder: "2"
           - !Ref "AWS::NoValue"
