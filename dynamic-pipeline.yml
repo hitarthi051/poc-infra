@@ -129,6 +129,7 @@ Resources:
                   Owner: hitarthi051
                   Repo: poc-api
                   Branch: !Ref APIBranch
+                  OAuthToken: !Ref Githubtoken
                 OutputArtifacts:
                   - Name: APISource
                 RunOrder: 1
