@@ -12,14 +12,28 @@ Resources:
     Properties:
       TemplateURL: ./s3.yml
       TimeoutInMinutes: 30
-  cloudfront:
+  # cloudfront:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     Parameters:
+  #       BucketName: "ui-artifacts-poc-zero-downtime-v3"
+  #     TemplateURL: ./cloudfront.yml
+  #     TimeoutInMinutes: 30
+  # cloudfrontB:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     Parameters:
+  #       BucketName: "ui-artifacts-poc-zero-downtime-v3-b"
+  #     TemplateURL: ./cloudfront.yml
+  #     TimeoutInMinutes: 30
+  cloudfrontGreen:
     Type: AWS::CloudFormation::Stack
     Properties:
       Parameters:
         BucketName: "ui-artifacts-poc-zero-downtime-v3"
       TemplateURL: ./cloudfront.yml
       TimeoutInMinutes: 30
-  cloudfrontB:
+  cloudfrontBlue:
     Type: AWS::CloudFormation::Stack
     Properties:
       Parameters:

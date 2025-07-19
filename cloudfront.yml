@@ -18,8 +18,9 @@ Resources:
         Origins:
           - Id: "MyOrigin"
             DomainName: !Sub "${BucketName}.s3.eu-west-1.amazonaws.com"  
+            OriginAccessControlId: !Ref MyOriginAccessControl  
             S3OriginConfig:
-              OriginAccessControlId: !Ref MyOriginAccessControl  
+              OriginAccessIdentity: ''
         Enabled: "true"
         DefaultCacheBehavior:
           TargetOriginId: "MyOrigin"

@@ -1,51 +1,79 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: API Gateway without any methods
+Description: API Gateway with methods and multiple stages
 
 Resources:
+
   pocApiGateway1:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: poc-api-gateway-1
       Description: API Gateway created using CloudFormation
+
   pocApiGateway2:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: poc-api-gateway-2
       Description: API Gateway created using CloudFormation
 
-  pocApiDeployment2:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn: pocApiGateway2
+  pocApiResource1:
+    Type: AWS::ApiGateway::Resource
     Properties:
-      RestApiId: !Ref pocApiGateway2
+      RestApiId: !Ref pocApiGateway1
+      ParentId: 
+        Fn::GetAtt:
+          - pocApiGateway1
+          - RootResourceId
+      PathPart: ping
+
+  pocApiMethod1:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref pocApiGateway1
+      ResourceId: !Ref pocApiResource1
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+
+  pocApiDeployment1:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: pocApiMethod1
+    Properties:
+      RestApiId: !Ref pocApiGateway1
       Description: Deployment for API Gateway 1
 
   pocApiStageBlue:
     Type: AWS::ApiGateway::Stage
     Properties:
       StageName: blue
-      RestApiId: !Ref pocApiGateway2
-      DeploymentId: !Ref pocApiDeployment2
+      RestApiId: !Ref pocApiGateway1
+      DeploymentId: !Ref pocApiDeployment1
       Description: Blue stage for API 1
 
   pocApiStageGreen:
     Type: AWS::ApiGateway::Stage
     Properties:
       StageName: green
-      RestApiId: !Ref pocApiGateway2
-      DeploymentId: !Ref pocApiDeployment2
+      RestApiId: !Ref pocApiGateway1
+      DeploymentId: !Ref pocApiDeployment1
       Description: Green stage for API 1
 
-
   SSMApiGatewayId1:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Type: String
       Description: API Gateway 1 Id 
       Value: !Ref pocApiGateway1
       Name: !Sub "/poc/apigateway1/id"
+
   SSMApiGatewayId2:
-    Type: "AWS::SSM::Parameter"
+    Type: AWS::SSM::Parameter
     Properties:
       Type: String
       Description: API Gateway 2 Id 
