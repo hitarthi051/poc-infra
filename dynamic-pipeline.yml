@@ -17,6 +17,10 @@ Parameters:
     AllowedValues:
       - "yes"
       - "no"
+  RECORDNAME:
+    Type: String
+  HOSTEDZONEID:
+    Type: String
   DEPLOYDB:
     Type: String
     AllowedValues:
@@ -32,9 +36,17 @@ Parameters:
     AllowedValues:
       - "yes"
       - "no"
-  STABLE_TAG:
+  STABLETAG:
     Type: String
-  CANARY_TAG:
+  CANARYTAG:
+    Type: String
+  STABLEWEIGHT:
+    Type: String
+  CANARYWEIGHT:
+    Type: String
+  CLOUDFRONTCANARY:
+    Type: String
+  CLOUDFRONTSTABLE:
     Type: String
 
 Conditions:
@@ -214,7 +226,6 @@ Resources:
                   - Name: APISource
                 Configuration:
                   ProjectName: zero-downtime-poc-infrastructure-weight-shift
-                  EnvironmentVariables: !Sub '[{"name":"HOSTED_ZONE_ID","value":"${HOSTED_ZONE_ID}","type":"PLAINTEXT"}, {"name":"RECORD_NAME","value":"${RECORD_NAME}","type":"PLAINTEXT"}, {"name":"STABLE_TAG","value":"${STABLE_TAG}", {"name":"CANARY_TAG","value":"${CANARY_TAG}","type":"PLAINTEXT"},"type":"PLAINTEXT"},{"name":"PIPELINE_EXECUTION_ID","value":"#{codepipeline.PipelineExecutionId}","type":"PLAINTEXT"}]'
+                  EnvironmentVariables: !Sub '[{"name":"HOSTED_ZONE_ID","value":"${HOSTEDZONEID}","type":"PLAINTEXT"},{"name":"RECORD_NAME","value":"${RECORDNAME}","type":"PLAINTEXT"},{"name":"STABLE_WEIGHT","value":"${STABLEWEIGHT}","type":"PLAINTEXT"},{"name":"CANARY_WEIGHT","value":"${CANARYWEIGHT}","type":"PLAINTEXT"},{"name":"CLOUDFRONT_CANARY","value":"${CLOUDFRONTCANARY}","type":"PLAINTEXT"},{"name":"CLOUDFRONT_STABLE","value":"${CLOUDFRONTSTABLE}","type":"PLAINTEXT"},{"name":"STABLE_TAG","value":"${STABLETAG}", {"name":"CANARY_TAG","value":"${CANARYTAG}","type":"PLAINTEXT"},"type":"PLAINTEXT"},{"name":"PIPELINE_EXECUTION_ID","value":"#{codepipeline.PipelineExecutionId}","type":"PLAINTEXT"}]'
                 RunOrder: "2"
           - !Ref "AWS::NoValue"
-
