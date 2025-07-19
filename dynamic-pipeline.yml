@@ -101,7 +101,7 @@ Resources:
                 Name: UISource
                 ActionTypeId:
                   Category: Source
-                  Owner: AWS
+                  Owner: ThirdParty   
                   Provider: GitHub
                   Version: "1"
                 Configuration:
