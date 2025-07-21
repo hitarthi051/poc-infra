@@ -7,4 +7,5 @@ phases:
   build:
     commands:
       - sudo apt update && sudo apt install -y jq
-      - . ./buildspec/dynamic-pipeline.sh
+      - chmod +x buildspec/dynamic-pipeline.sh
+      - bash buildspec/dynamic-pipeline.sh
