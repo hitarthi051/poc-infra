@@ -1,6 +1,25 @@
 #!/bin/bash
 set -e
 
+DOMAIN="testapi.infra.icpo.altosaint.co.uk"
+REGION="eu-west-1"
+
+# Delete existing base path mappings
+for path in $(aws apigateway get-base-path-mappings --domain-name "$DOMAIN" --region "$REGION" --query 'items[*].basePath' --output text); do
+  aws apigateway delete-base-path-mapping --domain-name "$DOMAIN" --base-path "$path" --region "$REGION"
+done
+
+# Create new base path mapping (root)
+aws apigateway create-base-path-mapping \
+  --domain-name "$DOMAIN" \
+  --rest-api-id "$APIID" \
+  --stage "$STAGE" \
+  --base-path "(none)" \
+  --region "$REGION"
+
+echo "✅ Mapping updated: $DOMAIN -> $STAGE"
+
+
 cat > change-batch.json <<EOF
 {
   "Comment": "Weighted routing update",

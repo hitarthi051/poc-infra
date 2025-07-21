@@ -276,6 +276,8 @@ Resources:
                       {"name":"CLOUDFRONT_CANARY","value":"${CLOUDFRONTCANARY}","type":"PLAINTEXT"},
                       {"name":"CLOUDFRONT_STABLE","value":"${CLOUDFRONTSTABLE}","type":"PLAINTEXT"},
                       {"name":"STABLE_TAG","value":"${STABLETAG}","type":"PLAINTEXT"},
+                      {"name":"STAGE","value":"${CANARYTAG}","type":"PLAINTEXT"},
+                      {"name":"APIID","value":"${APIID}","type":"PLAINTEXT"},
                       {"name":"CANARY_TAG","value":"${CANARYTAG}","type":"PLAINTEXT"},
                       {"name":"PIPELINE_EXECUTION_ID","value":"#{codepipeline.PipelineExecutionId}","type":"PLAINTEXT"}
                     ]
