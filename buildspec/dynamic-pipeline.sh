@@ -4,8 +4,8 @@ set -e
 
 # STABLE_TAG=""
 # CANARY_TAG=""
-# CLOUDFRONT_CANARY=""
-# CLOUDFRONT_STABLE=""
+CLOUDFRONT_CANARY=""
+CLOUDFRONT_STABLE=""
 for id in $(aws cloudfront list-distributions --query "DistributionList.Items[?Tags.Items[?Key=='TrafficType' && Value=='Stable']].Id" --output text); do
   dns=$(aws cloudfront get-distribution --id "$id" --query "Distribution.DomainName" --output text)
 
@@ -26,9 +26,14 @@ for id in $(aws cloudfront list-distributions --query "DistributionList.Items[?T
     export CLOUDFRONT_CANARY=$(aws cloudfront list-distributions --query "DistributionList.Items[?Tags.Items[?Key=='Deployment' && Value=='blue']].DomainName" --output text)
     export UIARTIFACTBUCKETNAME="${UIARTIFACTBUCKETNAME}-b"
   fi
-
+   echo "CLOUDFRONT_STABLE: $CLOUDFRONT_STABLE"
+   echo "CLOUDFRONT_CANARY: $CLOUDFRONT_CANARY"
   break
 done
+
+
+echo "CLOUDFRONT_STABLE: $CLOUDFRONT_STABLE"
+echo "CLOUDFRONT_CANARY: $CLOUDFRONT_CANARY"
 
 
 aws cloudformation deploy --template ./dynamic-pipeline.yml \
