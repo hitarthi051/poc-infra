@@ -490,6 +490,14 @@ Resources:
             Value: ""
           - Name: STABLE_TAG
             Value: ""
+          - Name: APIID
+            Value: ""
+          - Name: Githubtoken
+            Value: ""
+          - Name: S3Bucket
+            Value: ""
+            
+            
       TimeoutInMinutes: 90
 
   APICodeBuild:
