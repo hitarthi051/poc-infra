@@ -49,7 +49,7 @@ aws cloudformation deploy --template ./dynamic-pipeline.yml \
     CLOUDFRONTCANARY=${CLOUDFRONT_CANARY} \
     CLOUDFRONTSTABLE=${CLOUDFRONT_STABLE} \
     STABLETAG=${STABLE_TAG} \
-    APIID="693utogn2j" \
+    APIID=${APIID} \
     CANARYTAG=${CANARY_TAG} 
     --no-fail-on-empty-changeset
 echo "Deployed Successfully"
