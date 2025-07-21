@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-DOMAIN="testapi.infra.icpo.altosaint.co.uk"
+DOMAIN="bg.infra.cpo-uk.icpo.altosaint.co.uk"
 REGION="eu-west-1"
 
 # Delete existing base path mappings
