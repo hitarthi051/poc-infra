@@ -6,4 +6,5 @@ phases:
       nodejs: 20
   build:
     commands:
+      - sudo apt update && sudo apt install -y jq
       - . ./buildspec/dynamic-pipeline.sh
