@@ -393,10 +393,6 @@ Resources:
             Value: ""
           - Name: CANARY_WEIGHT
             Value: ""
-          - Name: CLOUDFRONT_CANARY
-            Value: ""
-          - Name: CLOUDFRONT_STABLE
-            Value: ""
           - Name: STABLE_TAG
             Value: ""
           - Name: STAGE
