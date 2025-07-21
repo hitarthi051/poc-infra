@@ -117,6 +117,25 @@ Resources:
               - !Ref AWS::NoValue
 
             - !If
+              - CondDEPLOYUI
+              - 
+                Name: InfraSource
+                ActionTypeId:
+                  Category: Source
+                  Owner: ThirdParty   
+                  Provider: GitHub
+                  Version: "1"
+                Configuration:
+                  Owner: hitarthi051
+                  Repo: poc-infra
+                  Branch: "v1"
+                  OAuthToken: !Ref Githubtoken
+                OutputArtifacts:
+                  - Name: InfraSource
+                RunOrder: 1
+              - !Ref AWS::NoValue
+
+            - !If
               - CondDEPLOYAPI
               - 
                 Name: APISource
@@ -245,7 +264,7 @@ Resources:
                   Provider: CodeBuild
                   Version: "1"
                 InputArtifacts:
-                  - Name: APISource
+                  - Name: InfraSource
                 Configuration:
                   ProjectName: zero-downtime-poc-infrastructure-weight-shift
                   EnvironmentVariables: !Sub |

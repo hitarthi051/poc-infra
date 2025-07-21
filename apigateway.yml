@@ -63,6 +63,14 @@ Resources:
       RestApiId: !Ref pocApiGateway1
       DeploymentId: !Ref pocApiDeployment1
       Description: Green stage for API 1
+      
+  pocApiStageDev:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: dev
+      RestApiId: !Ref pocApiGateway1
+      DeploymentId: !Ref pocApiDeployment1
+      Description: Green stage for API 1
 
   SSMApiGatewayId1:
     Type: AWS::SSM::Parameter
