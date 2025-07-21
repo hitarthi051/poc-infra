@@ -32,7 +32,7 @@ cat > change-batch.json <<EOF
         "SetIdentifier": "Stable-Version",
         "Weight": $STABLE_WEIGHT,
         "AliasTarget": {
-          "HostedZoneId": "$HOSTED_ZONE_ID",
+          "HostedZoneId": "Z2FDTNDATAQYW2",
           "DNSName": "$CLOUDFRONT_STABLE",
           "EvaluateTargetHealth": false
         }
@@ -46,7 +46,7 @@ cat > change-batch.json <<EOF
         "SetIdentifier": "Canary-Version",
         "Weight": $CANARY_WEIGHT,
         "AliasTarget": {
-          "HostedZoneId": "$HOSTED_ZONE_ID",
+          "HostedZoneId": "Z2FDTNDATAQYW2",
           "DNSName": "$CLOUDFRONT_CANARY",
           "EvaluateTargetHealth": false
         }
