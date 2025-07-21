@@ -52,6 +52,8 @@ Parameters:
     Type: String
   Githubtoken:
     Type: String
+  APIID:
+    Type: String
 
 Conditions:
   CondDEPLOYAPI: !Equals [!Ref DEPLOYAPI, "yes"]
