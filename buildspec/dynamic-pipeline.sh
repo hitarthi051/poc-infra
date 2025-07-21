@@ -2,6 +2,10 @@
 
 set -e
 
+# STABLE_TAG=""
+# CANARY_TAG=""
+# CLOUDFRONT_CANARY=""
+# CLOUDFRONT_STABLE=""
 for id in $(aws cloudfront list-distributions --query "DistributionList.Items[?Tags.Items[?Key=='TrafficType' && Value=='Stable']].Id" --output text); do
   dns=$(aws cloudfront get-distribution --id "$id" --query "Distribution.DomainName" --output text)
 
@@ -9,18 +13,18 @@ for id in $(aws cloudfront list-distributions --query "DistributionList.Items[?T
   tags=$(aws cloudfront list-tags-for-resource --resource "arn:aws:cloudfront::$(aws sts get-caller-identity --query Account --output text):distribution/$id" --query "Tags.Items" --output json)
   deploy=$(echo "$tags" | jq -r '.[] | select(.Key == "Deployment") | .Value')
 
-  CLOUDFRONT_STABLE="$dns"
+  export CLOUDFRONT_STABLE="$dns"
 
   if [[ "$deploy" == "blue" ]]; then
-    STABLE_TAG="blue"
-    CANARY_TAG="green"    
-    CLOUDFRONT_CANARY=$(aws cloudfront list-distributions --query "DistributionList.Items[?Tags.Items[?Key=='Deployment' && Value=='green']].DomainName" --output text)
-    UIARTIFACTBUCKETNAME="${UIARTIFACTBUCKETNAME}"
+   export STABLE_TAG="blue"
+   export CANARY_TAG="green"    
+   export CLOUDFRONT_CANARY=$(aws cloudfront list-distributions --query "DistributionList.Items[?Tags.Items[?Key=='Deployment' && Value=='green']].DomainName" --output text)
+   export UIARTIFACTBUCKETNAME="${UIARTIFACTBUCKETNAME}"
   elif [[ "$deploy" == "green" ]]; then
-    STABLE_TAG="green"
-    CANARY_TAG="blue"
-    CLOUDFRONT_CANARY=$(aws cloudfront list-distributions --query "DistributionList.Items[?Tags.Items[?Key=='Deployment' && Value=='blue']].DomainName" --output text)
-    UIARTIFACTBUCKETNAME="${UIARTIFACTBUCKETNAME}-b"
+    export STABLE_TAG="green"
+    export CANARY_TAG="blue"
+    export CLOUDFRONT_CANARY=$(aws cloudfront list-distributions --query "DistributionList.Items[?Tags.Items[?Key=='Deployment' && Value=='blue']].DomainName" --output text)
+    export UIARTIFACTBUCKETNAME="${UIARTIFACTBUCKETNAME}-b"
   fi
 
   break
@@ -50,6 +54,6 @@ aws cloudformation deploy --template ./dynamic-pipeline.yml \
     CLOUDFRONTSTABLE=${CLOUDFRONT_STABLE} \
     STABLETAG=${STABLE_TAG} \
     APIID=${APIID} \
-    CANARYTAG=${CANARY_TAG} 
+    CANARYTAG=${CANARY_TAG} \
     --no-fail-on-empty-changeset
 echo "Deployed Successfully"
