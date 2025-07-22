@@ -17,6 +17,10 @@ REGION="eu-west-1"
 #   --base-path "(none)" \
 #   --region "$REGION"
 
+VERSION=$(aws lambda get-alias --function-name poc-serverless-typescript-dev-api --name green --query 'FunctionVersion' --output text) && \
+aws lambda update-alias --function-name poc-serverless-typescript-dev-api --name prod --function-version "$VERSION"
+
+
 echo "✅ Mapping updated: $DOMAIN -> $STAGE"
 
 
@@ -77,4 +81,5 @@ aws cloudfront tag-resource \
 aws cloudfront tag-resource \
   --resource "arn:aws:cloudfront::$ACCOUNT_ID:distribution/$STABLE_ID" \
   --tags "Items=[{Key=TrafficType,Value=Canary}]"
-  aws lambda add-permission --function-name "arn:aws:lambda:eu-west-1:057297422439:function:blue-green-api:green" --source-arn "arn:aws:execute-api:eu-west-1:057297422439:693utogn2j/*/GET/get-all-users" --principal apigateway.amazonaws.com --statement-id 78cb2b59-2666-4da5-9004-45d7c3c515fe --action lambda:InvokeFunction
+
+  #  aws lambda add-permission --function-name "arn:aws:lambda:eu-west-1:057297422439:function:poc-serverless-typescript-dev-api:prod" --source-arn "arn:aws:execute-api:eu-west-1:057297422439:693utogn2j" --principal apigateway.amazonaws.com --statement-id 78cb2b59-2666-4da5-9004-45d7c3c515fe --action lambda:InvokeFunction
