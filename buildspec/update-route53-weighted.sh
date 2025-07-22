@@ -7,7 +7,6 @@ REGION="eu-west-1"
 VERSION=$(aws lambda get-alias --function-name poc-serverless-typescript-dev-api --name green --query 'FunctionVersion' --output text) && \
 aws lambda update-alias --function-name poc-serverless-typescript-dev-api --name prod --function-version "$VERSION"
 
-#!/bin/bash
 set -e
 
 # === CONFIGURATION ===
