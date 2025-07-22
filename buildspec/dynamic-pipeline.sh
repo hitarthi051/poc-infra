@@ -2,10 +2,11 @@
 
 set -e
 
-# STABLE_TAG=""
-# CANARY_TAG=""
 CLOUDFRONT_CANARY=""
 CLOUDFRONT_STABLE=""
+CANARY_TAG=""
+STABLE_TAG=""
+UIARTIFACTBUCKETNAME="ui-artifacts-poc-zero-downtime-v3"
 # for id in $(aws cloudfront list-distributions --query "DistributionList.Items[?Tags.Items[?Key=='TrafficType' && Value=='Stable']].Id" --output text); do
 #   dns=$(aws cloudfront get-distribution --id "$id" --query "Distribution.DomainName" --output text)
 
@@ -87,8 +88,11 @@ for id in $(aws cloudfront list-distributions --query "DistributionList.Items[].
   fi
 done
 
-echo "CLOUDFRONT_STABLE: $CLOUDFRONT_STABLE"
-echo "CLOUDFRONT_CANARY: $CLOUDFRONT_CANARY"
+  echo "CLOUDFRONT_STABLE: $CLOUDFRONT_STABLE"
+    echo "CLOUDFRONT_CANARY: $CLOUDFRONT_CANARY"
+    echo "STABLE_TAG: $STABLE_TAG"
+    echo "CANARY_TAG: $CANARY_TAG"
+    echo "CANARY_Bucket: $UIARTIFACTBUCKETNAME"
 
 
 aws cloudformation deploy --template ./dynamic-pipeline.yml \
