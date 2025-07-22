@@ -10,90 +10,56 @@ aws lambda update-alias --function-name poc-serverless-typescript-dev-api --name
 set -e
 
 # === CONFIGURATION ===
-DIST_BLUE="E1T632SM7O8KE3"   # 🔵 Blue distribution ID
-DIST_GREEN="E3SGG9AJJ3ROLH"  # 🟢 Green distribution ID
+DISTRIBUTION_ID_BLUE="E1T632SM7O8KE3"   # 🔵 Blue distribution ID
+DISTRIBUTION_ID_GREEN="E3SGG9AJJ3ROLH"  # 🟢 Green distribution ID
 ZONE_ID="Z09957721W0YI639HY837"    # Hosted zone for domain
-CNAME_WEC="wec.infra.cpo-uk.icpo.altosaint.co.uk"
+DOMAIN_NAME="wec.infra.cpo-uk.icpo.altosaint.co.uk"
 TARGET="${STAGE}"  
-
-update_cnames() {
-  DIST_ID=$1
-  ADD_WEC=$2
-
-  # Get distribution config and ETag
-  CONF=$(aws cloudfront get-distribution-config --id "$DIST_ID")
-  ETAG=$(echo "$CONF" | jq -r .ETag)
-  CONFIG=$(echo "$CONF" | jq .DistributionConfig)
-
-  # Build CNAMES array
-  CNAMES_JSON='{"Quantity":0, "Items":[]}'
-  if [[ "$ADD_WEC" == "true" ]]; then
-    CNAMES_JSON=$(jq -n --arg cname "$CNAME_WEC" '{
-      Quantity: 1,
-      Items: [$cname]
-    }')
-  fi
-
-  # Update config with new CNAMES
-  NEW_CONF=$(echo "$CONFIG" | jq --argjson aliases "$CNAMES_JSON" '.Aliases = $aliases')
-
-  # Apply update
-  aws cloudfront update-distribution \
-    --id "$DIST_ID" \
-    --if-match "$ETAG" \
-    --distribution-config "$NEW_CONF"
-}
-
-
-update_dns() {
-  DIST_ID=$1
-  DOMAIN_NAME=$(aws cloudfront get-distribution --id "$DIST_ID" --query "Distribution.DomainName" --output text)
-
-  echo "🔄 Updating Route53 to point $CNAME_WEC to $DOMAIN_NAME"
-
-  cat > change-batch.json <<EOF
-{
-  "Comment": "Switch $CNAME_WEC to CloudFront $DIST_ID",
-  "Changes": [
-    {
-      "Action": "UPSERT",
-      "ResourceRecordSet": {
-        "Name": "$CNAME_WEC",
-        "Type": "CNAME",
-        "TTL": 300,
-        "ResourceRecords": [{ "Value": "$DOMAIN_NAME" }]
-      }
-    }
-  ]
-}
-EOF
-
-  aws route53 change-resource-record-sets \
-    --hosted-zone-id "$ZONE_ID" \
-    --change-batch file://change-batch.json
-
-  rm -f change-batch.json
-}
-
-
-if [[ "$TARGET" == "blue" ]]; then
-  echo "🔵 Switching $CNAME_WEC to BLUE ($DIST_BLUE)"
-  update_cnames "$DIST_GREEN" false
-  update_cnames "$DIST_BLUE" true
-  update_dns "$DIST_BLUE"
-
-elif [[ "$TARGET" == "green" ]]; then
-  echo "🟢 Switching $CNAME_WEC to GREEN ($DIST_GREEN)"
-  update_cnames "$DIST_BLUE" false
-  update_cnames "$DIST_GREEN" true
-  update_dns "$DIST_GREEN"
-
+if [ "$TARGET" == "blue" ]; then
+  ADD_TO=$DISTRIBUTION_ID_BLUE
+  REMOVE_FROM=$DISTRIBUTION_ID_GREEN
+elif [ "$TARGET" == "green" ]; then
+  ADD_TO=$DISTRIBUTION_ID_GREEN
+  REMOVE_FROM=$DISTRIBUTION_ID_BLUE
 else
-  echo "❌ Usage: ./switch-wec.sh [blue|green]"
+  echo "Invalid TARGET: $TARGET. Use 'blue' or 'green'"
   exit 1
 fi
 
-echo "✅ Successfully switched $CNAME_WEC to $TARGET"
+
+echo "Removing $DOMAIN_NAME from $REMOVE_FROM..."
+aws cloudfront get-distribution-config --id "$REMOVE_FROM" > remove.json
+ETAG_REMOVE=$(aws cloudfront get-distribution-config --id "$REMOVE_FROM" --query "ETag" --output text)
+
+jq --arg domain "$DOMAIN_NAME" '
+  .DistributionConfig.Aliases.Items |= map(select(. != $domain)) |
+  .DistributionConfig.Aliases.Quantity = (.DistributionConfig.Aliases.Items | length)
+' remove.json > remove-updated.json
+
+aws cloudfront update-distribution \
+  --id "$REMOVE_FROM" \
+  --if-match "$ETAG_REMOVE" \
+  --distribution-config file://remove-updated.json
+echo "Removed from $REMOVE_FROM ✅"
+
+# === Add to target distribution ===
+echo "Adding $DOMAIN_NAME to $ADD_TO..."
+aws cloudfront get-distribution-config --id "$ADD_TO" > add.json
+ETAG_ADD=$(aws cloudfront get-distribution-config --id "$ADD_TO" --query "ETag" --output text)
+
+jq --arg domain "$DOMAIN_NAME" '
+  .DistributionConfig.Aliases.Items |= (.+ [$domain] | unique) |
+  .DistributionConfig.Aliases.Quantity = (.DistributionConfig.Aliases.Items | length)
+' add.json > add-updated.json
+
+aws cloudfront update-distribution \
+  --id "$ADD_TO" \
+  --if-match "$ETAG_ADD" \
+  --distribution-config file://add-updated.json
+echo "Added to $ADD_TO ✅"
+
+# === Clean up ===
+rm remove.json remove-updated.json add.json add-updated.json
 
 
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
