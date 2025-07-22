@@ -10,11 +10,12 @@ aws lambda update-alias --function-name poc-serverless-typescript-dev-api --name
 set -e
 
 # === CONFIGURATION ===
-DISTRIBUTION_ID_BLUE="E1T632SM7O8KE3"   # 🔵 Blue distribution ID
-DISTRIBUTION_ID_GREEN="E3SGG9AJJ3ROLH"  # 🟢 Green distribution ID
+BLUE_DIST_ID="E1T632SM7O8KE3"   # 🔵 Blue distribution ID
+GREEN_DIST_ID="E3SGG9AJJ3ROLH"  # 🟢 Green distribution ID
 ZONE_ID="Z09957721W0YI639HY837"    # Hosted zone for domain
-DOMAIN_NAME="wec.infra.cpo-uk.icpo.altosaint.co.uk"
+CNAME_WEC="wec.infra.cpo-uk.icpo.altosaint.co.uk"
 TARGET="${STAGE}"  
+
 
 remove_cname_from_dist() {
   DIST_ID=$1
