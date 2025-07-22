@@ -4,4 +4,4 @@ phases:
   build:
     commands:
       # - chmod +x update-route53-weighted.sh
-      - . ./buildspec/update-route53-weighted.sh
+      - bash ./update-route53-weighted.sh
