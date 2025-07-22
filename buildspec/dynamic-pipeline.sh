@@ -83,7 +83,6 @@ for id in $(aws cloudfront list-distributions --query "DistributionList.Items[].
     echo "STABLE_TAG: $STABLE_TAG"
     echo "CANARY_TAG: $CANARY_TAG"
     echo "CANARY_Bucket: $UIARTIFACTBUCKETNAME"
-
     break
   fi
 done
