@@ -15,53 +15,84 @@ DISTRIBUTION_ID_GREEN="E3SGG9AJJ3ROLH"  # 🟢 Green distribution ID
 ZONE_ID="Z09957721W0YI639HY837"    # Hosted zone for domain
 DOMAIN_NAME="wec.infra.cpo-uk.icpo.altosaint.co.uk"
 TARGET="${STAGE}"  
-if [ "$TARGET" == "blue" ]; then
-  ADD_TO=$DISTRIBUTION_ID_BLUE
-  REMOVE_FROM=$DISTRIBUTION_ID_GREEN
-elif [ "$TARGET" == "green" ]; then
-  ADD_TO=$DISTRIBUTION_ID_GREEN
-  REMOVE_FROM=$DISTRIBUTION_ID_BLUE
+
+remove_cname_from_dist() {
+  DIST_ID=$1
+  CNAME=$2
+
+  echo "Checking for $CNAME in $DIST_ID..."
+  CONF=$(aws cloudfront get-distribution-config --id "$DIST_ID")
+  ETAG=$(echo "$CONF" | jq -r .ETag)
+  CONFIG=$(echo "$CONF" | jq .DistributionConfig)
+
+  # Remove cname if exists
+  CNAMES=$(echo "$CONFIG" | jq '.Aliases.Items')
+  NEW_CNAMES=$(echo "$CNAMES" | jq --arg cname "$CNAME" 'map(select(. != $cname))')
+  COUNT=$(echo "$NEW_CNAMES" | jq 'length')
+
+  UPDATED=$(echo "$CONFIG" | jq \
+    --argjson new_cnames "$NEW_CNAMES" \
+    --argjson count "$COUNT" \
+    '.Aliases.Items = $new_cnames | .Aliases.Quantity = $count')
+
+  # Send full config
+  echo "$UPDATED" > /tmp/conf.json
+  aws cloudfront update-distribution \
+    --id "$DIST_ID" \
+    --if-match "$ETAG" \
+    --distribution-config file:///tmp/conf.json
+
+  echo "Removed $CNAME from $DIST_ID"
+}
+
+add_cname_to_dist() {
+  DIST_ID=$1
+  CNAME=$2
+
+  echo "Adding $CNAME to $DIST_ID..."
+  CONF=$(aws cloudfront get-distribution-config --id "$DIST_ID")
+  ETAG=$(echo "$CONF" | jq -r .ETag)
+  CONFIG=$(echo "$CONF" | jq .DistributionConfig)
+
+  # Append cname if not present
+  CNAMES=$(echo "$CONFIG" | jq '.Aliases.Items')
+  EXISTS=$(echo "$CNAMES" | jq --arg cname "$CNAME" 'index($cname)')
+
+  if [[ "$EXISTS" == "null" ]]; then
+    NEW_CNAMES=$(echo "$CNAMES" | jq --arg cname "$CNAME" '. + [$cname]')
+    COUNT=$(echo "$NEW_CNAMES" | jq 'length')
+
+    UPDATED=$(echo "$CONFIG" | jq \
+      --argjson new_cnames "$NEW_CNAMES" \
+      --argjson count "$COUNT" \
+      '.Aliases.Items = $new_cnames | .Aliases.Quantity = $count')
+
+    echo "$UPDATED" > /tmp/conf.json
+    aws cloudfront update-distribution \
+      --id "$DIST_ID" \
+      --if-match "$ETAG" \
+      --distribution-config file:///tmp/conf.json
+
+    echo "Added $CNAME to $DIST_ID"
+  else
+    echo "$CNAME already exists in $DIST_ID"
+  fi
+}
+
+if [[ "$TARGET" == "blue" ]]; then
+  remove_cname_from_dist "$GREEN_DIST_ID" "$CNAME_WEC"
+  add_cname_to_dist "$BLUE_DIST_ID" "$CNAME_WEC"
+elif [[ "$TARGET" == "green" ]]; then
+  remove_cname_from_dist "$BLUE_DIST_ID" "$CNAME_WEC"
+  add_cname_to_dist "$GREEN_DIST_ID" "$CNAME_WEC"
 else
-  echo "Invalid TARGET: $TARGET. Use 'blue' or 'green'"
+  echo "Invalid target: $TARGET (use 'blue' or 'green')"
   exit 1
 fi
 
 
-echo "Removing $DOMAIN_NAME from $REMOVE_FROM..."
-aws cloudfront get-distribution-config --id "$REMOVE_FROM" > remove.json
-ETAG_REMOVE=$(aws cloudfront get-distribution-config --id "$REMOVE_FROM" --query "ETag" --output text)
 
-jq --arg domain "$DOMAIN_NAME" '
-  .DistributionConfig.Aliases.Items |= map(select(. != $domain)) |
-  .DistributionConfig.Aliases.Quantity = (.DistributionConfig.Aliases.Items | length)
-' remove.json > remove-updated.json
-
-aws cloudfront update-distribution \
-  --id "$REMOVE_FROM" \
-  --if-match "$ETAG_REMOVE" \
-  --distribution-config file://remove-updated.json
-echo "Removed from $REMOVE_FROM ✅"
-
-# === Add to target distribution ===
-echo "Adding $DOMAIN_NAME to $ADD_TO..."
-aws cloudfront get-distribution-config --id "$ADD_TO" > add.json
-ETAG_ADD=$(aws cloudfront get-distribution-config --id "$ADD_TO" --query "ETag" --output text)
-
-jq --arg domain "$DOMAIN_NAME" '
-  .DistributionConfig.Aliases.Items |= (.+ [$domain] | unique) |
-  .DistributionConfig.Aliases.Quantity = (.DistributionConfig.Aliases.Items | length)
-' add.json > add-updated.json
-
-aws cloudfront update-distribution \
-  --id "$ADD_TO" \
-  --if-match "$ETAG_ADD" \
-  --distribution-config file://add-updated.json
-echo "Added to $ADD_TO ✅"
-
-# === Clean up ===
-rm remove.json remove-updated.json add.json add-updated.json
-
-
+# tag
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 CANARY_ID=$(aws cloudfront list-distributions \
   --query "DistributionList.Items[?DomainName=='$CLOUDFRONT_CANARY'].Id" \
