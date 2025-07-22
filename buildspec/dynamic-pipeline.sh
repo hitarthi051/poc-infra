@@ -53,11 +53,9 @@ for id in $(aws cloudfront list-distributions --query "DistributionList.Items[].
     if [[ "$deploy" == "blue" ]]; then
       export STABLE_TAG="blue"
       export CANARY_TAG="green"
-      export UIARTIFACTBUCKETNAME="${UIARTIFACTBUCKETNAME}"
     elif [[ "$deploy" == "green" ]]; then
       export STABLE_TAG="green"
       export CANARY_TAG="blue"
-      export UIARTIFACTBUCKETNAME="${UIARTIFACTBUCKETNAME}-b"
     else
       echo "Unknown deployment tag: $deploy"
       exit 1
