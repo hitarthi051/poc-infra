@@ -14,7 +14,6 @@ DIST_BLUE="E1T632SM7O8KE3"   # 🔵 Blue distribution ID
 DIST_GREEN="E3SGG9AJJ3ROLH"  # 🟢 Green distribution ID
 ZONE_ID="Z09957721W0YI639HY837"    # Hosted zone for domain
 CNAME_WEC="wec.infra.cpo-uk.icpo.altosaint.co.uk"
-CNAME_WILDCARD="*.infra.cpo-uk.icpo.altosaint.co.uk"
 TARGET="${STAGE}"  
 
 update_cnames() {
@@ -25,7 +24,7 @@ update_cnames() {
   CONFIG=$(echo "$CONF" | jq .DistributionConfig)
 
   CNAMES=()
-  [[ "$DIST_ID" == "$DIST_GREEN" ]] && CNAMES+=("$CNAME_WILDCARD")  # Wildcard always on Green
+  [[ "$DIST_ID" == "$DIST_GREEN" ]]   # Wildcard always on Green
   [[ "$ADD_WEC" == "true" ]] && CNAMES+=("$CNAME_WEC")
 
   NEW_CONF=$(echo "$CONFIG" | jq --argjson aliases "$(printf '%s\n' "${CNAMES[@]}" | jq -R . | jq -s '{Quantity: length, Items: .}')" '.Aliases = $aliases')
