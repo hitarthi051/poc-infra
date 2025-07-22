@@ -19,20 +19,31 @@ TARGET="${STAGE}"
 update_cnames() {
   DIST_ID=$1
   ADD_WEC=$2
+
+  # Get distribution config and ETag
   CONF=$(aws cloudfront get-distribution-config --id "$DIST_ID")
   ETAG=$(echo "$CONF" | jq -r .ETag)
   CONFIG=$(echo "$CONF" | jq .DistributionConfig)
 
-  CNAMES=()
-  [[ "$ADD_WEC" == "true" ]] && CNAMES+=("$CNAME_WEC")
+  # Build CNAMES array
+  CNAMES_JSON='{"Quantity":0, "Items":[]}'
+  if [[ "$ADD_WEC" == "true" ]]; then
+    CNAMES_JSON=$(jq -n --arg cname "$CNAME_WEC" '{
+      Quantity: 1,
+      Items: [$cname]
+    }')
+  fi
 
-  NEW_CONF=$(echo "$CONFIG" | jq --argjson aliases "$(printf '%s\n' "${CNAMES[@]}" | jq -R . | jq -s '{Quantity: length, Items: .}')" '.Aliases = $aliases')
+  # Update config with new CNAMES
+  NEW_CONF=$(echo "$CONFIG" | jq --argjson aliases "$CNAMES_JSON" '.Aliases = $aliases')
 
+  # Apply update
   aws cloudfront update-distribution \
     --id "$DIST_ID" \
     --if-match "$ETAG" \
     --distribution-config "$NEW_CONF"
 }
+
 
 update_dns() {
   DIST_ID=$1
