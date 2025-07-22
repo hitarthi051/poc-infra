@@ -243,7 +243,7 @@ Resources:
                   - Name: APISource
                 Configuration:
                   ProjectName: zero-downtime-poc-api
-                  EnvironmentVariables: !Sub '[{"name":"STAGE","value":"${BlueOrGreen}","type":"PLAINTEXT"}]'
+                  EnvironmentVariables: !Sub '[{"name":"STAGE","value":"${CANARYTAG}","type":"PLAINTEXT"}]'
                 RunOrder: "6"
           - !Ref "AWS::NoValue"
         - !If 
