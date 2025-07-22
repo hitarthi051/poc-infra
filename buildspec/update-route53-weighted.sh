@@ -24,7 +24,6 @@ update_cnames() {
   CONFIG=$(echo "$CONF" | jq .DistributionConfig)
 
   CNAMES=()
-  [[ "$DIST_ID" == "$DIST_GREEN" ]]   # Wildcard always on Green
   [[ "$ADD_WEC" == "true" ]] && CNAMES+=("$CNAME_WEC")
 
   NEW_CONF=$(echo "$CONFIG" | jq --argjson aliases "$(printf '%s\n' "${CNAMES[@]}" | jq -R . | jq -s '{Quantity: length, Items: .}')" '.Aliases = $aliases')
@@ -68,7 +67,6 @@ EOF
 
 if [[ "$TARGET" == "blue" ]]; then
   echo "🔵 Switching $CNAME_WEC to BLUE ($DIST_BLUE)"
-  update_cnames "$DIST_BLUE" false
   update_cnames "$DIST_GREEN" false
   update_cnames "$DIST_BLUE" true
   update_dns "$DIST_BLUE"
@@ -76,7 +74,6 @@ if [[ "$TARGET" == "blue" ]]; then
 elif [[ "$TARGET" == "green" ]]; then
   echo "🟢 Switching $CNAME_WEC to GREEN ($DIST_GREEN)"
   update_cnames "$DIST_BLUE" false
-  update_cnames "$DIST_GREEN" false
   update_cnames "$DIST_GREEN" true
   update_dns "$DIST_GREEN"
 
